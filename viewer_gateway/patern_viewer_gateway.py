@@ -250,17 +250,19 @@ class Handler(http.server.BaseHTTPRequestHandler):
             conn.close()
 
     def _health(self):
+        # HTTP 응답이 오기만 하면 살아 있는 것이다 — HEAD 를 모르는 서버는 501 을 준다
         host, port = self.server.upstream
-        up = False
+        up, code, err = False, None, None
         try:
-            c = http.client.HTTPConnection(host, port, timeout=3)
+            c = http.client.HTTPConnection(host, port, timeout=10)
             c.request("HEAD", "/")
-            up = c.getresponse().status < 500
+            code = c.getresponse().status
+            up = True
             c.close()
-        except OSError:
-            pass
+        except OSError as e:
+            err = str(e)
         self._send_json(200, {"ok": True, "mode": "view_only", "upstream": "%s:%d" % (host, port),
-                              "upstream_up": up})
+                              "upstream_up": up, "upstream_status": code, "upstream_error": err})
 
     do_GET = do_HEAD = do_POST = do_PUT = do_DELETE = do_PATCH = do_OPTIONS = _handle
 

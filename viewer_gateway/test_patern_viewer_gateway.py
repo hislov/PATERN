@@ -210,6 +210,21 @@ class TestOps(GatewayCase):
         body = json.loads(data)
         self.assertEqual((status, body["mode"], body["upstream_up"]), (200, "view_only", True))
 
+    def test_health_counts_upstream_without_head_as_up(self):
+        # 대시보드 서버가 HEAD 를 구현하지 않으면 501 — 그래도 살아 있다
+        self.up.RequestHandlerClass = type("NoHead", (http.server.BaseHTTPRequestHandler,), {
+            "do_GET": FakeHandler._reply, "log_message": FakeHandler.log_message})
+        status, data = self.req("GET", "/__viewer/health")
+        body = json.loads(data)
+        self.assertEqual((body["upstream_up"], body["upstream_status"]), (True, 501))
+
+    def test_health_reports_down(self):
+        self.up.shutdown()
+        self.up.server_close()
+        body = json.loads(self.req("GET", "/__viewer/health")[1])
+        self.assertFalse(body["upstream_up"])
+        self.assertTrue(body["upstream_error"])
+
     def test_ledger_and_show_blocked(self):
         self.req("GET", "/api/aegis_status")
         self.req("POST", "/api/refresh_pdd")
