@@ -213,8 +213,15 @@ class TestOps(GatewayCase):
     def test_ledger_and_show_blocked(self):
         self.req("GET", "/api/aegis_status")
         self.req("POST", "/api/refresh_pdd")
-        with open(self.log, encoding="utf-8") as f:
-            rows = [json.loads(l) for l in f]
+        # 원장 줄은 응답을 보낸 뒤에 쓴다 — 클라이언트가 응답을 받은 시점엔 아직 없을 수 있다
+        rows = []
+        for _ in range(100):
+            if os.path.exists(self.log):
+                with open(self.log, encoding="utf-8") as f:
+                    rows = [json.loads(l) for l in f]
+            if len(rows) >= 2:
+                break
+            time.sleep(0.05)
         self.assertEqual([r["decision"] for r in rows], ["forwarded", "blocked"])
         import contextlib
         import io
