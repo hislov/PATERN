@@ -1,0 +1,20 @@
+{
+  "_comment": "보기 전용 규칙. deny_always 는 모든 요청에, deny_get 은 정적 파일이 아닌 GET/HEAD 에 적용. POST 는 allow_post_paths 와 경로 전체가 맞는 것만 통과. 그 밖의 메서드는 모두 차단.",
+  "deny_always_patterns": [
+    "(^|/)\\.", "secret", "password", "credential", "api_?key"
+  ],
+  "deny_get_patterns": [
+    "refresh", "restart", "reload", "kickstart", "diagnose", "kill", "shutdown",
+    "trigger", "(^|/|_)run($|/|_)", "exec", "apply", "commit", "deploy",
+    "delete", "remove", "reset", "cancel", "approve", "toggle", "enable", "disable",
+    "(^|/|_)start($|/|_)", "(^|/|_)stop($|/|_)", "(^|/|_)set($|/|_)", "update_", "write", "save", "upload",
+    "order", "trade", "send", "notify", "push",
+    "token"
+  ],
+  "static_ext": [".html", ".js", ".mjs", ".css", ".png", ".jpg", ".jpeg", ".gif", ".svg", ".ico",
+                 ".webp", ".woff", ".woff2", ".ttf", ".map", ".webmanifest"],
+  "allow_post_paths": [],
+  "post_rate": {"concurrent": 1, "per_minute": 6},
+  "max_body_bytes": 65536,
+  "upstream_timeout_s": 180
+}
